@@ -6,7 +6,7 @@
 #define VERDADEIRO 1
 #define FALSO 0
 
-typedef short boolean ;
+typedef short boolean;
 
 typedef struct vert{
     int valor;
@@ -28,28 +28,13 @@ typedef struct grafo{
     vertice** vertices;
 }Grafo;
 
-Grafo* iniciarGrafo(int nVertices){
-    Grafo* g = (Grafo*) malloc(nVertices * sizeof(Grafo));
-    g->nVertices = nVertices;
-    g->nArestas = 0;
+Grafo* iniciarGrafo(int nVertices, int nArestas){
+    Grafo* g;
+    g = (Grafo*) malloc(sizeof(Grafo));
     g->vertices = (vertice**) malloc(nVertices * sizeof(vertice*));
-    int i;
-    for(i = 0; i < g->nVertices; i++){
-        vertice* v = (vertice*) malloc(sizeof(vertice));
-        v->valor = 0;
-        v->grau = 0;
-        v->prox = NULL;
-        g->vertices[i] = v;
-    }
-    return g;
-}
-
-Grafo* iniciarGrafoVazio(){
-    Grafo* g = (Grafo*) malloc(sizeof(Grafo));
+    g->arestas = (aresta*) malloc(nArestas * sizeof(aresta));
     g->nVertices = 0;
     g->nArestas = 0;
-    g->vertices = (vertice**) malloc(sizeof(vertice*));
-    return g;
 }
 
 int encontrarVertice(Grafo** g, int u){
@@ -71,19 +56,13 @@ boolean possuiVertice(Grafo** g, int verticeValor){
     return achado;
 }
 
-void adicionarVertice(Grafo **g, int verticeValor){
-    int i;
-    Grafo *aux = iniciarGrafo((*g)->nVertices + 1);
-    for (i = 0; i < (*g)->nVertices; i++){
-        aux->vertices[i] = (*g)->vertices[i];
-    }
-    aux->nArestas = (*g)->nArestas;
-    vertice *novoVertice = (vertice *)malloc(sizeof(vertice));
+void adicionarVertice(Grafo** g, int verticeValor){
+    vertice* novoVertice = (vertice*) malloc(sizeof(vertice));
     novoVertice->valor = verticeValor;
-    novoVertice->grau = 0;
     novoVertice->prox = NULL;
-    aux->vertices[aux->nVertices - 1] = novoVertice;
-    (*g) = aux;
+    novoVertice->grau = 0;
+    (*g)->nVertices++;
+    (*g)->vertices[(*g)->nVertices - 1] = novoVertice;
 }
 
 boolean possuiArco(Grafo** g, int u, int v){
@@ -119,8 +98,7 @@ void adicionarArco(Grafo **g, int u, int v, int custoUV){
     strcpy(novaAresta.label,"A");
     strcat(novaAresta.label, buffer);
     novaAresta.custo = custoUV;
-    printf("\n\nNova aresta: %s %d -> %d (custo: %d)\n", novaAresta.label, novaAresta.origem, novaAresta.destino, novaAresta.custo);
-    //(*g)->arestas[(*g)->nArestas] = novaAresta;
+    (*g)->arestas[(*g)->nArestas] = novaAresta;
     (*g)->nArestas++;
 }
 
@@ -137,6 +115,7 @@ void destruirGrafo(Grafo** g){
         }
         free((*g)->vertices);
     }
+    free((*g)->arestas);
     free(*g);
 }
 
@@ -153,8 +132,8 @@ void mostrarGrafo(Grafo** g){
         printf("| Grau: %d\n",(*g)->vertices[i]->grau);
     }
     printf("\nVertices: %d Arestas: %d\n", (*g)->nVertices, (*g)->nArestas);
-    //for(i = 0; i < (*g)->nArestas; i++)
-        //printf("Aresta %s: %d -> %d (Custo: %d)\n\n",(*g)->arestas[i].label, (*g)->arestas[i].origem, (*g)->arestas[i].destino, (*g)->arestas[i].custo);
+    for(i = 0; i < (*g)->nArestas; i++)
+        printf("Aresta %s: %d -> %d (Custo: %d)\n\n",(*g)->arestas[i].label, (*g)->arestas[i].origem, (*g)->arestas[i].destino, (*g)->arestas[i].custo);
 }
 
 FILE* carregarArquivo(){
@@ -183,15 +162,16 @@ FILE* carregarArquivo(){
     return arquivo;
 }
 
-Grafo* montarGrafo(FILE* arquivoGrafo, int* origem, int* destino){
+Grafo* montarGrafo(FILE* arquivoGrafo, int* origem, int* destino, boolean* possuiArcoNegativo){
     Grafo* g;
     int nArestas, nVertices, verticeU, verticeV, custoUV,linhasLidas;
     fscanf(arquivoGrafo, "%d %d %d %d", &nVertices, &nArestas, origem, destino);
-    g = iniciarGrafoVazio();
-    g->arestas = (aresta*) malloc(nArestas * sizeof(aresta));
+    g = iniciarGrafo(nVertices, nArestas);
     linhasLidas = 0;
     while(linhasLidas < nArestas){
         fscanf(arquivoGrafo, "%d %d %d", &verticeU, &verticeV, &custoUV);
+        if(custoUV < 0)
+            *possuiArcoNegativo = VERDADEIRO;
         if(!possuiVertice(&g, verticeU))
             adicionarVertice(&g, verticeU);
         if(!possuiVertice(&g, verticeV))
@@ -207,12 +187,16 @@ int main(int narg, char* argv[]){
     Grafo* g;
     FILE* arquivoGrafo;
     int verticeOrigem, verticeDestino;
+    boolean possuiArcoNegativo = FALSO;
     if(narg > 1)
         arquivoGrafo = fopen(argv[1], "r");
     else
         arquivoGrafo = carregarArquivo();
-    g = montarGrafo(arquivoGrafo, &verticeOrigem, &verticeDestino); 
-    mostrarGrafo(&g);
+    g = montarGrafo(arquivoGrafo, &verticeOrigem, &verticeDestino, &possuiArcoNegativo);
+    if(possuiArcoNegativo){
+        printf("\n\nO grafo informado possui pelo menos 1 arco com custo negativo, nao posso calcular o caminho minimo de %d a %d usando o algoritmo de Dijkstra!\n\n",verticeOrigem, verticeDestino);
+    } 
+    //mostrarGrafo(&g);
     destruirGrafo(&g);
     return 0;
 }
