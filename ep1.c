@@ -183,6 +183,31 @@ Grafo* montarGrafo(FILE* arquivoGrafo, int* origem, int* destino, boolean* possu
     return g;
 }
 
+boolean pertence(int** conjunto, int elemento, int tamanhoConjunto){
+    int i = 0;
+    boolean achada = FALSO;
+    while(!achada && i < tamanhoConjunto)
+        if((*conjunto)[i] == elemento)
+            achada = VERDADEIRO;
+    return achada;
+}
+
+void Dijkstra(Grafo** g, int origem, int destino, int** anterior, float** custos){
+    int i, tamanhoZ;
+    int* conjuntoZ;
+    for(i = 0; i < (*g)->nVertices; i++){
+        (*anterior)[i] = 0;
+        (*custos)[i] = INFINITY;
+    }
+    custos[origem - 1] = 0;
+    conjuntoZ = (int*) malloc((*g)->nVertices * sizeof(int));
+    conjuntoZ[0] = origem;
+    tamanhoZ = 1;
+    while(!pertence(&conjuntoZ, destino, tamanhoZ)){
+
+    }
+}
+
 int main(int narg, char* argv[]){
     Grafo* g;
     FILE* arquivoGrafo;
@@ -196,7 +221,12 @@ int main(int narg, char* argv[]){
     if(possuiArcoNegativo){
         printf("\n\nO grafo informado possui pelo menos 1 arco com custo negativo, nao posso calcular o caminho minimo de %d a %d usando o algoritmo de Dijkstra!\n\n",verticeOrigem, verticeDestino);
     } 
-    //mostrarGrafo(&g);
+    else{
+        int* anterior = (int*) malloc(g->nVertices * sizeof(int));
+        float* custos = (float*) malloc(g->nVertices * sizeof(float));
+        Dijkstra(&g, verticeOrigem, verticeDestino, &anterior, &custos);
+    }
+    printf("\n\nFim\n\n");
     destruirGrafo(&g);
     return 0;
 }
