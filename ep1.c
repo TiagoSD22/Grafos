@@ -134,23 +134,22 @@ Grafo* iniciarGrafo(int nVertices, int nArestas){
     g->nArestas = 0;
 }
 
-int encontrarVertice(Grafo** g, int u){
+int encontrarVertice(Grafo** g, int verticeValor){
     int i = 0;
-    while((*g)->vertices[i]->valor != u)
-        i++;
-    return i;
+    boolean achada = FALSO;
+    while(!achada && i < (*g)->nVertices){
+        if((*g)->vertices[i]->valor == verticeValor)
+            achada = VERDADEIRO;
+        else 
+            i++;
+    }
+    if(achada)
+        return i;
+    return -1;
 }
 
 boolean possuiVertice(Grafo** g, int verticeValor){
-    boolean achado = FALSO;
-    int i = 0;
-    while((!achado) && (i < (*g)->nVertices)){
-        if((*g)->vertices[i]->valor == verticeValor){
-            achado = VERDADEIRO;
-        }
-        i++;
-    }
-    return achado;
+    return encontrarVertice(g, verticeValor) != -1;
 }
 
 void adicionarVertice(Grafo** g, int verticeValor){
@@ -360,7 +359,7 @@ int main(int narg, char* argv[]){
         float* custos = (float*) malloc(g->nVertices * sizeof(float));
         Dijkstra(&g, g->vertices[encontrarVertice(&g, verticeOrigem)], g->vertices[encontrarVertice(&g, verticeDestino)], &anterior, &custos);
         if(custos[g->vertices[encontrarVertice(&g, verticeDestino)]->indice] == INFINITY){
-            printf("\n\nO custo para ir de %d a %d no grafo é INFINITO!, pois nao existe caminho entre tais vertices!\n\n", verticeOrigem, verticeDestino);
+            printf("\n\nO custo para ir de %d a %d no grafo é INFINITO, pois nao existe caminho entre tais vertices!\n\n", verticeOrigem, verticeDestino);
         }
         else{
             mostrarCaminho(&g, verticeOrigem, verticeDestino, &anterior, &custos);
