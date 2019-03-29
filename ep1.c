@@ -28,6 +28,111 @@ typedef struct grafo{
     vertice** vertices;
 }Grafo;
 
+//rotinas para manipulação do heap
+typedef struct heap{
+    aresta* arestas;
+    int tamanho;
+    int capacidade;
+}HeapMinimo;
+
+HeapMinimo* CriarHeap(int espaco){
+    HeapMinimo* h = (HeapMinimo*) malloc(sizeof(HeapMinimo));
+    h->tamanho=0;
+    h->capacidade = espaco;
+    h->arestas = (aresta*) malloc(espaco * sizeof(aresta));
+    return h;
+}
+
+void print(HeapMinimo* h){
+    int i;
+    printf("____________Print Heap_____________\n");
+    for(i=0;i< h->tamanho;i++){
+        printf("(%s: %d -> %d [custo: %d]) ->",h->arestas[i].label, h->arestas[i].origem, h->arestas[i].destino, h->arestas[i].custo);
+    }
+    printf("->__/\\__\n");
+}
+
+boolean heapVazia(HeapMinimo* h){
+    return h->tamanho == 0;
+}
+
+void PercolacaoAscendente(HeapMinimo* h, int index){
+    aresta aux;
+    int posicaoPai = (index - 1) / 2;
+
+    if(h->arestas[posicaoPai].custo > h->arestas[index].custo){
+        aux = h->arestas[posicaoPai];
+        h->arestas[posicaoPai] = h->arestas[index];
+        h->arestas[index] = aux;
+        PercolacaoAscendente(h, posicaoPai);
+    }
+}
+
+void PercolacaoDescendente(HeapMinimo* h, int posicaoPai){
+    int filhoEsquerdo = posicaoPai*2 + 1;
+    int filhoDireito = posicaoPai*2 + 2;
+    int min;
+    aresta aux;
+
+    if(filhoEsquerdo >= h->tamanho || filhoEsquerdo <0)
+        filhoEsquerdo = -1;
+    if(filhoDireito >= h->tamanho || filhoDireito <0)
+        filhoDireito = -1;
+
+    if(filhoEsquerdo != -1 && h->arestas[filhoEsquerdo].custo < h->arestas[posicaoPai].custo)
+        min = filhoEsquerdo;
+    else
+        min = posicaoPai;
+
+    if(filhoDireito != -1 && h->arestas[filhoDireito].custo < h->arestas[min].custo)
+        min = filhoDireito;
+
+    if(min != posicaoPai){
+        aux = h->arestas[min];
+        h->arestas[min] = h->arestas[posicaoPai];
+        h->arestas[posicaoPai] = aux;
+
+        PercolacaoDescendente(h, min);
+    }
+}
+
+void inserirHeap(HeapMinimo* h, aresta nova){
+    if( h->tamanho < h->capacidade){
+        h->arestas[h->tamanho] = nova;
+        PercolacaoAscendente(h, h->tamanho);
+        h->tamanho++;
+    }
+}
+
+void removerHeap(HeapMinimo* h, aresta remover){
+    int i,posicaoPai;
+    boolean achado = FALSO;
+    i = 0;
+    while(!achado && i < h->tamanho){
+        if(strcmp(h->arestas[i].label, remover.label) == 0)
+            achado = VERDADEIRO;
+        i++;
+    }
+    i--;
+    h->arestas[i] = h->arestas[h->tamanho - 1];
+    h->tamanho--;
+    posicaoPai = i / 2;
+    if(i == 0 || h->arestas[posicaoPai].custo < h->arestas[i].custo)
+        PercolacaoDescendente(h, i);
+    else
+        PercolacaoAscendente(h, i);
+}
+
+aresta extrairMinimo(HeapMinimo* h){
+    aresta min;
+    min = h->arestas[0];
+    h->arestas[0] = h->arestas[h->tamanho-1];
+    h->tamanho--;
+    PercolacaoDescendente(h, 0);
+    return min;
+}
+//fim das rotinas para manipulação do heap
+
 Grafo* iniciarGrafo(int nVertices, int nArestas){
     Grafo* g;
     g = (Grafo*) malloc(sizeof(Grafo));
@@ -197,6 +302,32 @@ int main(int narg, char* argv[]){
         printf("\n\nO grafo informado possui pelo menos 1 arco com custo negativo, nao posso calcular o caminho minimo de %d a %d usando o algoritmo de Dijkstra!\n\n",verticeOrigem, verticeDestino);
     } 
     //mostrarGrafo(&g);
-    destruirGrafo(&g);
+    //destruirGrafo(&g);
+
+    HeapMinimo* h = CriarHeap(g->nArestas);
+    int i;
+    for(i = 0; i < g->nArestas; i++)
+        inserirHeap(h, g->arestas[i]);
+    print(h);
+    //aresta min = extrairMinimo(h);
+    //printf("\n\nAresta removida: %s: %d -> %d(custo: %d)\n\n", min.label, min.origem, min.destino, min.custo);
+    //print(h);
+    removerHeap(h, g->arestas[2]);
+    print(h);
+    /*Heap* h = CreateHeap(10);
+    
+    insert(h, 1);
+    insert(h, 5);
+    insert(h, 6);
+    insert(h, 9);
+    insert(h, 11);
+    insert(h, 8);
+    insert(h, 15);
+    insert(h, 17);
+    insert(h, 21);
+    print(h);
+
+    removerElemento(h, 5);
+    print(h);*/
     return 0;
 }
