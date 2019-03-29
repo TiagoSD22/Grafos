@@ -6,7 +6,6 @@ Simples trabalho abordando a implementação do glorioso algoritmo de Dijkstra p
 Para compilar o programa utilize uma versão do GCC (>= 7.3). O arquivo executável pode ser chamado passando um argumento extra como parâmetro, este parâmetro deve ser o nome de um arquivo em extensão '.txt' contendo a representação de um grafo dirigido no seguinte formato:
 
 n m s t
-
 u1 v1 c1
 u2 v2 c2
 ...
