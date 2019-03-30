@@ -280,7 +280,7 @@ void atualizarHeap(HeapMinimo* h, int* conjuntoZ, int tamanhoZ, Grafo** g){
         }
     }
 
-    i = 0, j = 0;
+    i = j = 0;
     while(i < (*g)->vertices[encontrarVertice(g, conjuntoZ[tamanhoZ - 1])]->grau){
         if((*g)->arestas[j].origem == conjuntoZ[tamanhoZ - 1]){
             if(!pertence(&conjuntoZ, (*g)->arestas[j].destino, tamanhoZ)){
@@ -304,7 +304,7 @@ void Dijkstra(Grafo** g, vertice* origem, vertice* destino, int** anterior, floa
     conjuntoZ = (int*) malloc((*g)->nVertices * sizeof(int));
     conjuntoZ[0] = origem->valor;
     tamanhoZ = 1;
-    i = 0, j = 0;
+    i = j = 0;
     HeapMinimo* h = CriarHeap((*g)->nArestas);
     while(i < origem->grau){
         if((*g)->arestas[j].origem == origem->valor){
@@ -317,8 +317,8 @@ void Dijkstra(Grafo** g, vertice* origem, vertice* destino, int** anterior, floa
         minima = extrairMinimo(h);
         conjuntoZ[tamanhoZ] = minima.destino;
         tamanhoZ++;
-        (*custos)[(*g)->vertices[encontrarVertice(g, minima.destino)]->indice] = (*custos)[(*g)->vertices[encontrarVertice(g, minima.origem)]->indice] + minima.custo;
-        (*anterior)[(*g)->vertices[encontrarVertice(g, minima.destino)]->indice] = minima.origem;
+        (*custos)[encontrarVertice(g, minima.destino)] = (*custos)[encontrarVertice(g, minima.origem)] + minima.custo;
+        (*anterior)[encontrarVertice(g, minima.destino)] = minima.origem;
         atualizarHeap(h, conjuntoZ, tamanhoZ, g);
     }
     free(conjuntoZ);
@@ -326,19 +326,23 @@ void Dijkstra(Grafo** g, vertice* origem, vertice* destino, int** anterior, floa
 }
 
 void mostrarCaminho(Grafo** g, int verticeOrigem, int verticeDestino, int** anterior, float** custos){
-    int i = 0;
-    int vAtual = verticeOrigem;
-    printf("\n\nCaminho minimo do vertice %d para o vertice %d: [", verticeOrigem, verticeDestino);
-    while(vAtual != verticeDestino){
-        if((*anterior)[i] == vAtual){
-            printf("%d -> ", vAtual);
-            vAtual = (*g)->vertices[i]->valor;
-            i = 0;
-        }
-        else
-            i++;
+    int vAtual, i, tamanhoCaminho;
+    int aux[(*g)->nVertices];
+    vAtual = verticeDestino;
+    tamanhoCaminho = i = 0;
+    while(vAtual != verticeOrigem){
+        aux[i] = vAtual;
+        vAtual = (*anterior)[encontrarVertice(g, vAtual)];
+        i++;
     }
-    printf("%d]\nCusto do caminho: %d\n\n", vAtual, (int)((*custos)[(*g)->vertices[encontrarVertice(g, verticeDestino)]->indice]));
+    i++;
+    tamanhoCaminho = i;
+    aux[i - 1] = vAtual;
+    printf("\n\nCaminho minimo do vertice %d para o vertice %d: [", verticeOrigem, verticeDestino);
+    for(i = tamanhoCaminho - 1; i > 0; i--){
+        printf("%d -> ", aux[i]);
+    }
+    printf("%d]\nCusto do caminho: %d. Tamanho do caminho: %d vertices.\n\n", aux[0], (int)((*custos)[encontrarVertice(g, verticeDestino)]), tamanhoCaminho);
 }
 
 int main(int narg, char* argv[]){
