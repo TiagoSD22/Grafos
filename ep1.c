@@ -223,18 +223,15 @@ FILE* carregarArquivo(){
         fflush(stdin);
         nomeArquivo[0]='\0';
         fgets(nomeArquivo,32,stdin);
-        if(nomeArquivo[strlen(nomeArquivo) - 1] == '\n'){
+        if(nomeArquivo[strlen(nomeArquivo) - 1] == '\n')
             nomeArquivo[strlen(nomeArquivo) - 1] = '\0';
-        }
 
         arquivo = fopen(nomeArquivo,"r");
 
-        if(arquivo == NULL){
+        if(arquivo == NULL)
             printf("\nArquivo nao encontrado! Tente novamente!\n\n");
-        }
-        else{
+        else
             arquivoEncontrado = VERDADEIRO;
-        }
     }while(!arquivoEncontrado);
     return arquivo;
 }
@@ -276,15 +273,13 @@ void atualizarHeap(HeapMinimo* h, int* conjuntoZ, int tamanhoZ, Grafo** g, float
     int i,j;
     aresta* tmp = (aresta*) malloc( h->tamanho * sizeof(aresta));
     j = 0;
-    for(i = 0; i < h->tamanho; i++){
+    for(i = 0; i < h->tamanho; i++)
         if(pertence(&conjuntoZ, h->arestas[i].origem, tamanhoZ) && pertence(&conjuntoZ, h->arestas[i].destino, tamanhoZ)){
             tmp[j] = h->arestas[i];
             j++;
         }
-    }
-    for(i = 0; i < j; i++){
+    for(i = 0; i < j; i++)
         removerHeap(h, tmp[i]);
-    }
     free(tmp);
     
     i = j = 0;
@@ -348,9 +343,8 @@ void mostrarCaminho(Grafo** g, int verticeOrigem, int verticeDestino, int** ante
     tamanhoCaminho = i;
     aux[i - 1] = vAtual;
     printf("\n\nCaminho minimo do vertice %d para o vertice %d: [", verticeOrigem, verticeDestino);
-    for(i = tamanhoCaminho - 1; i > 0; i--){
+    for(i = tamanhoCaminho - 1; i > 0; i--)
         printf("%d -> ", aux[i]);
-    }
     printf("%d]\nCusto do caminho: %d. Tamanho do caminho: %d vertices.\n\n", aux[0], (int)((*custos)[encontrarVertice(g, verticeDestino)]), tamanhoCaminho);
 }
 
@@ -365,19 +359,16 @@ int main(int narg, char* argv[]){
         arquivoGrafo = carregarArquivo();
     g = montarGrafo(arquivoGrafo, &verticeOrigem, &verticeDestino, &possuiArcoNegativo);
     if(g->nArestas > 0 && (encontrarVertice(&g, verticeOrigem) != -1) && (encontrarVertice(&g, verticeDestino) != -1)){
-        if(possuiArcoNegativo){
+        if(possuiArcoNegativo)
             printf("\n\nO grafo informado possui pelo menos 1 arco com custo negativo, nao posso calcular o caminho minimo de %d a %d usando o algoritmo de Dijkstra!\n\n",verticeOrigem, verticeDestino);
-        } 
         else{
             int* anterior = (int*) malloc(g->nVertices * sizeof(int));
             float* custos = (float*) malloc(g->nVertices * sizeof(float));
             Dijkstra(&g, g->vertices[encontrarVertice(&g, verticeOrigem)], g->vertices[encontrarVertice(&g, verticeDestino)], &anterior, &custos);
-            if(custos[g->vertices[encontrarVertice(&g, verticeDestino)]->indice] == INFINITY){
+            if(custos[g->vertices[encontrarVertice(&g, verticeDestino)]->indice] == INFINITY)
                 printf("\n\nO custo para ir de %d a %d no grafo é INFINITO, pois nao existe caminho entre tais vertices!\n\n", verticeOrigem, verticeDestino);
-            }
-            else{
+            else
                 mostrarCaminho(&g, verticeOrigem, verticeDestino, &anterior, &custos);
-            }
             free(anterior);
             free(custos);
         }
