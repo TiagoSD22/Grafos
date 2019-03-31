@@ -272,19 +272,28 @@ boolean pertence(int** conjunto, int elemento, int tamanhoConjunto){
     return achada;
 }
 
-void atualizarHeap(HeapMinimo* h, int* conjuntoZ, int tamanhoZ, Grafo** g){
+void atualizarHeap(HeapMinimo* h, int* conjuntoZ, int tamanhoZ, Grafo** g, float* custos){
     int i,j;
+    aresta* tmp = (aresta*) malloc( h->tamanho * sizeof(aresta));
+    j = 0;
     for(i = 0; i < h->tamanho; i++){
         if(pertence(&conjuntoZ, h->arestas[i].origem, tamanhoZ) && pertence(&conjuntoZ, h->arestas[i].destino, tamanhoZ)){
-            removerHeap(h, h->arestas[i]);
+            tmp[j] = h->arestas[i];
+            j++;
         }
     }
-
+    for(i = 0; i < j; i++){
+        removerHeap(h, tmp[i]);
+    }
+    free(tmp);
+    
     i = j = 0;
     while(i < (*g)->vertices[encontrarVertice(g, conjuntoZ[tamanhoZ - 1])]->grau){
         if((*g)->arestas[j].origem == conjuntoZ[tamanhoZ - 1]){
             if(!pertence(&conjuntoZ, (*g)->arestas[j].destino, tamanhoZ)){
-                inserirHeap(h, (*g)->arestas[j]);
+                aresta novaFronteira = (*g)->arestas[j];
+                novaFronteira.custo += (int)custos[encontrarVertice(g, novaFronteira.origem)];
+                inserirHeap(h, novaFronteira);
             }
             i++;
         }
@@ -317,9 +326,9 @@ void Dijkstra(Grafo** g, vertice* origem, vertice* destino, int** anterior, floa
         minima = extrairMinimo(h);
         conjuntoZ[tamanhoZ] = minima.destino;
         tamanhoZ++;
-        (*custos)[encontrarVertice(g, minima.destino)] = (*custos)[encontrarVertice(g, minima.origem)] + minima.custo;
+        (*custos)[encontrarVertice(g, minima.destino)] = minima.custo;
         (*anterior)[encontrarVertice(g, minima.destino)] = minima.origem;
-        atualizarHeap(h, conjuntoZ, tamanhoZ, g);
+        atualizarHeap(h, conjuntoZ, tamanhoZ, g, *custos);
     }
     free(conjuntoZ);
     free(h);
