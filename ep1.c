@@ -364,22 +364,26 @@ int main(int narg, char* argv[]){
     else
         arquivoGrafo = carregarArquivo();
     g = montarGrafo(arquivoGrafo, &verticeOrigem, &verticeDestino, &possuiArcoNegativo);
-    if(possuiArcoNegativo){
-        printf("\n\nO grafo informado possui pelo menos 1 arco com custo negativo, nao posso calcular o caminho minimo de %d a %d usando o algoritmo de Dijkstra!\n\n",verticeOrigem, verticeDestino);
-    } 
-    else{
-        int* anterior = (int*) malloc(g->nVertices * sizeof(int));
-        float* custos = (float*) malloc(g->nVertices * sizeof(float));
-        Dijkstra(&g, g->vertices[encontrarVertice(&g, verticeOrigem)], g->vertices[encontrarVertice(&g, verticeDestino)], &anterior, &custos);
-        if(custos[g->vertices[encontrarVertice(&g, verticeDestino)]->indice] == INFINITY){
-            printf("\n\nO custo para ir de %d a %d no grafo é INFINITO, pois nao existe caminho entre tais vertices!\n\n", verticeOrigem, verticeDestino);
-        }
+    if(g->nArestas > 0 && (encontrarVertice(&g, verticeOrigem) != -1) && (encontrarVertice(&g, verticeDestino) != -1)){
+        if(possuiArcoNegativo){
+            printf("\n\nO grafo informado possui pelo menos 1 arco com custo negativo, nao posso calcular o caminho minimo de %d a %d usando o algoritmo de Dijkstra!\n\n",verticeOrigem, verticeDestino);
+        } 
         else{
-            mostrarCaminho(&g, verticeOrigem, verticeDestino, &anterior, &custos);
+            int* anterior = (int*) malloc(g->nVertices * sizeof(int));
+            float* custos = (float*) malloc(g->nVertices * sizeof(float));
+            Dijkstra(&g, g->vertices[encontrarVertice(&g, verticeOrigem)], g->vertices[encontrarVertice(&g, verticeDestino)], &anterior, &custos);
+            if(custos[g->vertices[encontrarVertice(&g, verticeDestino)]->indice] == INFINITY){
+                printf("\n\nO custo para ir de %d a %d no grafo é INFINITO, pois nao existe caminho entre tais vertices!\n\n", verticeOrigem, verticeDestino);
+            }
+            else{
+                mostrarCaminho(&g, verticeOrigem, verticeDestino, &anterior, &custos);
+            }
+            free(anterior);
+            free(custos);
         }
-        free(anterior);
-        free(custos);
     }
+    else
+       printf("\n\nO custo para ir de %d a %d no grafo é INFINITO, pois nao existe caminho entre tais vertices!\n\n", verticeOrigem, verticeDestino); 
     destruirGrafo(&g);
     return 0;
 }
