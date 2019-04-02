@@ -355,8 +355,10 @@ int main(int narg, char* argv[]){
     boolean possuiArcoNegativo = FALSO;
     if(narg > 1){
         arquivoGrafo = fopen(argv[1], "r");
-        if(!arquivoGrafo)
+        if(!arquivoGrafo){
             printf("\nArquivo nao encontrado! Tente novamente!\n\n");
+            return 0;
+        }
     }
     else
         arquivoGrafo = carregarArquivo();
