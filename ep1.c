@@ -15,23 +15,23 @@ typedef struct vert{
     struct vert* prox;
 }vertice;
 
-typedef struct arestc{
+typedef struct arc{
     char label[10];
     int origem;
     int destino;
     int custo;
-}aresta;
+}arco;
 
 typedef struct grafo{
     int nVertices;
-    int nArestas;
-    aresta* arestas;
+    int nArcos;
+    arco* arcos;
     vertice** vertices;
 }Grafo;
 
 //rotinas para manipulação do heap
 typedef struct heap{
-    aresta* arestas;
+    arco* arcos;
     int tamanho;
     int capacidade;
 }HeapMinimo;
@@ -40,7 +40,7 @@ HeapMinimo* CriarHeap(int espaco){
     HeapMinimo* h = (HeapMinimo*) malloc(sizeof(HeapMinimo));
     h->tamanho=0;
     h->capacidade = espaco;
-    h->arestas = (aresta*) malloc(espaco * sizeof(aresta));
+    h->arcos = (arco*) malloc(espaco * sizeof(arco));
     return h;
 }
 
@@ -49,13 +49,13 @@ boolean heapVazia(HeapMinimo* h){
 }
 
 void PercolacaoAscendente(HeapMinimo* h, int index){
-    aresta aux;
+    arco aux;
     int posicaoPai = (index - 1) / 2;
 
-    if(h->arestas[posicaoPai].custo > h->arestas[index].custo){
-        aux = h->arestas[posicaoPai];
-        h->arestas[posicaoPai] = h->arestas[index];
-        h->arestas[index] = aux;
+    if(h->arcos[posicaoPai].custo > h->arcos[index].custo){
+        aux = h->arcos[posicaoPai];
+        h->arcos[posicaoPai] = h->arcos[index];
+        h->arcos[index] = aux;
         PercolacaoAscendente(h, posicaoPai);
     }
 }
@@ -64,74 +64,74 @@ void PercolacaoDescendente(HeapMinimo* h, int posicaoPai){
     int filhoEsquerdo = posicaoPai*2 + 1;
     int filhoDireito = posicaoPai*2 + 2;
     int min;
-    aresta aux;
+    arco aux;
 
     if(filhoEsquerdo >= h->tamanho || filhoEsquerdo <0)
         filhoEsquerdo = -1;
     if(filhoDireito >= h->tamanho || filhoDireito <0)
         filhoDireito = -1;
 
-    if(filhoEsquerdo != -1 && h->arestas[filhoEsquerdo].custo < h->arestas[posicaoPai].custo)
+    if(filhoEsquerdo != -1 && h->arcos[filhoEsquerdo].custo < h->arcos[posicaoPai].custo)
         min = filhoEsquerdo;
     else
         min = posicaoPai;
 
-    if(filhoDireito != -1 && h->arestas[filhoDireito].custo < h->arestas[min].custo)
+    if(filhoDireito != -1 && h->arcos[filhoDireito].custo < h->arcos[min].custo)
         min = filhoDireito;
 
     if(min != posicaoPai){
-        aux = h->arestas[min];
-        h->arestas[min] = h->arestas[posicaoPai];
-        h->arestas[posicaoPai] = aux;
+        aux = h->arcos[min];
+        h->arcos[min] = h->arcos[posicaoPai];
+        h->arcos[posicaoPai] = aux;
 
         PercolacaoDescendente(h, min);
     }
 }
 
-void inserirHeap(HeapMinimo* h, aresta nova){
+void inserirHeap(HeapMinimo* h, arco nova){
     if( h->tamanho < h->capacidade){
-        h->arestas[h->tamanho] = nova;
+        h->arcos[h->tamanho] = nova;
         PercolacaoAscendente(h, h->tamanho);
         h->tamanho++;
     }
 }
 
-void removerHeap(HeapMinimo* h, aresta remover){
+void removerHeap(HeapMinimo* h, arco remover){
     int i,posicaoPai;
     boolean achado = FALSO;
     i = 0;
     while(!achado && i < h->tamanho){
-        if(strcmp(h->arestas[i].label, remover.label) == 0)
+        if(strcmp(h->arcos[i].label, remover.label) == 0)
             achado = VERDADEIRO;
         i++;
     }
     i--;
-    h->arestas[i] = h->arestas[h->tamanho - 1];
+    h->arcos[i] = h->arcos[h->tamanho - 1];
     h->tamanho--;
     posicaoPai = i / 2;
-    if(i == 0 || h->arestas[posicaoPai].custo < h->arestas[i].custo)
+    if(i == 0 || h->arcos[posicaoPai].custo < h->arcos[i].custo)
         PercolacaoDescendente(h, i);
     else
         PercolacaoAscendente(h, i);
 }
 
-aresta extrairMinimo(HeapMinimo* h){
-    aresta min;
-    min = h->arestas[0];
-    h->arestas[0] = h->arestas[h->tamanho-1];
+arco extrairMinimo(HeapMinimo* h){
+    arco min;
+    min = h->arcos[0];
+    h->arcos[0] = h->arcos[h->tamanho-1];
     h->tamanho--;
     PercolacaoDescendente(h, 0);
     return min;
 }
 //fim das rotinas para manipulação do heap
 
-Grafo* iniciarGrafo(int nVertices, int nArestas){
+Grafo* iniciarGrafo(int nVertices, int nArcos){
     Grafo* g;
     g = (Grafo*) malloc(sizeof(Grafo));
     g->vertices = (vertice**) malloc(nVertices * sizeof(vertice*));
-    g->arestas = (aresta*) malloc(nArestas * sizeof(aresta));
+    g->arcos = (arco*) malloc(nArcos * sizeof(arco));
     g->nVertices = 0;
-    g->nArestas = 0;
+    g->nArcos = 0;
 }
 
 int encontrarVertice(Grafo** g, int verticeValor){
@@ -165,8 +165,8 @@ void adicionarVertice(Grafo** g, int verticeValor){
 boolean possuiArco(Grafo** g, int u, int v){
     int i = 0;
     boolean achada = FALSO;
-    while(!achada && i < (*g)->nArestas){
-        if((*g)->arestas[i].origem == u && (*g)->arestas[i].destino == v)
+    while(!achada && i < (*g)->nArcos){
+        if((*g)->arcos[i].origem == u && (*g)->arcos[i].destino == v)
             achada = VERDADEIRO;
         i++;
     }
@@ -183,17 +183,17 @@ void adicionarArco(Grafo **g, int u, int v, int custoUV){
     while (aux->prox != NULL)
         aux = aux->prox;
     aux->prox = novoVerticeAdjacente;
-    aresta novaAresta;
-    novaAresta.origem = u;
-    novaAresta.destino = v;
+    arco novoArco;
+    novoArco.origem = u;
+    novoArco.destino = v;
     char buffer[4];
     buffer[0] = '\0';
-    sprintf(buffer, "%d", (*g)->nArestas);
-    strcpy(novaAresta.label,"A");
-    strcat(novaAresta.label, buffer);
-    novaAresta.custo = custoUV;
-    (*g)->arestas[(*g)->nArestas] = novaAresta;
-    (*g)->nArestas++;
+    sprintf(buffer, "%d", (*g)->nArcos);
+    strcpy(novoArco.label,"A");
+    strcat(novoArco.label, buffer);
+    novoArco.custo = custoUV;
+    (*g)->arcos[(*g)->nArcos] = novoArco;
+    (*g)->nArcos++;
 }
 
 void destruirGrafo(Grafo** g){
@@ -209,7 +209,7 @@ void destruirGrafo(Grafo** g){
         }
         free((*g)->vertices);
     }
-    free((*g)->arestas);
+    free((*g)->arcos);
     free(*g);
 }
 
@@ -238,11 +238,11 @@ FILE* carregarArquivo(){
 
 Grafo* montarGrafo(FILE* arquivoGrafo, int* origem, int* destino, boolean* possuiArcoNegativo){
     Grafo* g;
-    int nArestas, nVertices, verticeU, verticeV, custoUV,linhasLidas;
-    fscanf(arquivoGrafo, "%d %d %d %d", &nVertices, &nArestas, origem, destino);
-    g = iniciarGrafo(nVertices, nArestas);
+    int nArcos, nVertices, verticeU, verticeV, custoUV,linhasLidas;
+    fscanf(arquivoGrafo, "%d %d %d %d", &nVertices, &nArcos, origem, destino);
+    g = iniciarGrafo(nVertices, nArcos);
     linhasLidas = 0;
-    while(linhasLidas < nArestas){
+    while(linhasLidas < nArcos){
         fscanf(arquivoGrafo, "%d %d %d", &verticeU, &verticeV, &custoUV);
         if(custoUV < 0)
             *possuiArcoNegativo = VERDADEIRO;
@@ -271,11 +271,11 @@ boolean pertence(int** conjunto, int elemento, int tamanhoConjunto){
 
 void atualizarHeap(HeapMinimo* h, int* conjuntoZ, int tamanhoZ, Grafo** g, float* custos){
     int i,j;
-    aresta* tmp = (aresta*) malloc( h->tamanho * sizeof(aresta));
+    arco* tmp = (arco*) malloc( h->tamanho * sizeof(arco));
     j = 0;
     for(i = 0; i < h->tamanho; i++)
-        if(pertence(&conjuntoZ, h->arestas[i].origem, tamanhoZ) && pertence(&conjuntoZ, h->arestas[i].destino, tamanhoZ)){
-            tmp[j] = h->arestas[i];
+        if(pertence(&conjuntoZ, h->arcos[i].origem, tamanhoZ) && pertence(&conjuntoZ, h->arcos[i].destino, tamanhoZ)){
+            tmp[j] = h->arcos[i];
             j++;
         }
     for(i = 0; i < j; i++)
@@ -284,9 +284,9 @@ void atualizarHeap(HeapMinimo* h, int* conjuntoZ, int tamanhoZ, Grafo** g, float
     
     i = j = 0;
     while(i < (*g)->vertices[encontrarVertice(g, conjuntoZ[tamanhoZ - 1])]->grau){
-        if((*g)->arestas[j].origem == conjuntoZ[tamanhoZ - 1]){
-            if(!pertence(&conjuntoZ, (*g)->arestas[j].destino, tamanhoZ)){
-                aresta novaFronteira = (*g)->arestas[j];
+        if((*g)->arcos[j].origem == conjuntoZ[tamanhoZ - 1]){
+            if(!pertence(&conjuntoZ, (*g)->arcos[j].destino, tamanhoZ)){
+                arco novaFronteira = (*g)->arcos[j];
                 novaFronteira.custo += (int)custos[encontrarVertice(g, novaFronteira.origem)];
                 inserirHeap(h, novaFronteira);
             }
@@ -299,7 +299,7 @@ void atualizarHeap(HeapMinimo* h, int* conjuntoZ, int tamanhoZ, Grafo** g, float
 void Dijkstra(Grafo** g, vertice* origem, vertice* destino, int** anterior, float** custos){
     int i, j, tamanhoZ;
     int* conjuntoZ;
-    aresta minima;
+    arco minima;
     for(i = 0; i < (*g)->nVertices; i++){
         (*anterior)[(*g)->vertices[i]->indice] = 0;
         (*custos)[(*g)->vertices[i]->indice] = INFINITY;
@@ -309,10 +309,10 @@ void Dijkstra(Grafo** g, vertice* origem, vertice* destino, int** anterior, floa
     conjuntoZ[0] = origem->valor;
     tamanhoZ = 1;
     i = j = 0;
-    HeapMinimo* h = CriarHeap((*g)->nArestas);
+    HeapMinimo* h = CriarHeap((*g)->nArcos);
     while(i < origem->grau){
-        if((*g)->arestas[j].origem == origem->valor){
-            inserirHeap(h, (*g)->arestas[j]);
+        if((*g)->arcos[j].origem == origem->valor){
+            inserirHeap(h, (*g)->arcos[j]);
             i++;
         }
         j++;
@@ -353,12 +353,15 @@ int main(int narg, char* argv[]){
     FILE* arquivoGrafo;
     int verticeOrigem, verticeDestino;
     boolean possuiArcoNegativo = FALSO;
-    if(narg > 1)
+    if(narg > 1){
         arquivoGrafo = fopen(argv[1], "r");
+        if(!arquivoGrafo)
+            printf("\nArquivo nao encontrado! Tente novamente!\n\n");
+    }
     else
         arquivoGrafo = carregarArquivo();
     g = montarGrafo(arquivoGrafo, &verticeOrigem, &verticeDestino, &possuiArcoNegativo);
-    if(g->nArestas > 0 && (encontrarVertice(&g, verticeOrigem) != -1) && (encontrarVertice(&g, verticeDestino) != -1)){
+    if(g->nArcos > 0 && (encontrarVertice(&g, verticeOrigem) != -1) && (encontrarVertice(&g, verticeDestino) != -1)){
         if(possuiArcoNegativo)
             printf("\n\nO grafo informado possui pelo menos 1 arco com custo negativo, nao posso calcular o caminho minimo de %d a %d usando o algoritmo de Dijkstra!\n\n",verticeOrigem, verticeDestino);
         else{
