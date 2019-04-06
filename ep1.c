@@ -115,9 +115,9 @@ void PercolacaoAscendente(HeapMinimo* h, int index){
 }
 
 /*
- * A funcao de percolacao descendente e similar a ascendente, entretanto o sentido da percolao segue de cima par baixo, para os 
+ * A funcao de percolacao descendente e similar a ascendente, entretanto o sentido da percolao segue de cima para baixo, para os 
  * casos em que um no pai se torne maior do que um de seus filhos.
- * Entrada: umm heap h e um inteiro i que indica a posicao do no por onde a percolacao sera iniciada
+ * Entrada: um heap h e um inteiro i que indica a posicao do no por onde a percolacao sera iniciada
  * Saida: o heap h equilibrado de forma crescente
 */
 void PercolacaoDescendente(HeapMinimo* h, int posicaoPai){
@@ -209,8 +209,8 @@ Grafo* iniciarGrafo(int nVertices, int nArcos){
 /*
  * Esta funcao auxilia para encontrar a posicao de um vertice contendo um determinado valor dentro do grafo
  * Entrada: um ponteiro para um grafo g e um inteiro u que representa o valor a ser buscado no grafo
- * Saida: um inteiro i que representa a posicao do vertice com valor u dentro da lista de vertices do grafo g 
- * Obs: a passagem de referencia com o ponteiro extra nesta e em todas as demais funcoes envolvendo grafos
+ * Saida: um inteiro i que representa a posicao do vertice com valor u dentro da lista de vertices do grafo g ou -1 caso nao exista tal vertice
+ * Obs: a passagem de referencia com o ponteiro extra nesta e em todas as demais funcoes envolvendo grafos foi feita
  * nao somente pela necessidade de modificar diretamente o grafo original, mas tambem para evitar a copia de toda a 
  * estrutura do grafo.
 */
@@ -228,7 +228,7 @@ int encontrarVertice(Grafo** g, int verticeValor){
     return -1;
 }
 
-//Esta funcao retorna VERDADEIRO caso um vertice de valor u exista no grafo G e FALSO caso contrario
+//Esta funcao retorna VERDADEIRO caso um vertice de valor u exista no grafo g e FALSO caso contrario
 boolean possuiVertice(Grafo** g, int verticeValor){
     return encontrarVertice(g, verticeValor) != -1;
 }
@@ -365,7 +365,7 @@ Grafo* montarGrafo(FILE* arquivoGrafo, int* origem, int* destino, boolean* possu
 /*
  * Esta funcao retorna VERDADEIRO caso um determinado elemento exista em um conjunto representado por um vetor v e 
  * FALSO caso contrario
- * Entrada: um ponteiro para um vetor v, um inteiro e um inteiro n que indica o tamanho do vetor v
+ * Entrada: um ponteiro para um vetor v, um inteiro e e um inteiro n que indica o tamanho do vetor v
  * Saida: VERDADEIRO caso o valor e exista no vetor v e FALSO caso ele nao exista
  * Obs: o uso do ponteiro extra para o vetor foi feito para evitar passar uma copia de todos os elementos do vetor
 */ 
@@ -389,7 +389,7 @@ void atualizarHeap(HeapMinimo* h, int* conjuntoZ, int tamanhoZ, Grafo** g, float
     arco* tmp = (arco*) malloc( h->tamanho * sizeof(arco));
     j = 0;
     /*
-     Este laco remove todos os arcos que na atual iteracao sao internos a regiao Z, como nao podemos alterar diretamente o heap
+     Este laco remove todos os arcos que na atual iteracao sao internos a regiao Z, como nao podemos alterar diretamente o heap,
      cada vez que detectamos um arco interno que deve ser removido, este e armazenado em um vetor de arcos auxiliar e ao final
      do laco, removemos todos os arcos deste vetor do heap binario
     */
@@ -404,15 +404,15 @@ void atualizarHeap(HeapMinimo* h, int* conjuntoZ, int tamanhoZ, Grafo** g, float
     free(tmp);
     
     /*
-     Este laco procura dentre os arcos do grafo g aqueles cuja origem parte do ultimo vertice adicionado a regiao Z e a origem
-     e algum valor fora de Z, caso isso ocorra, significa que este arco, na atual iteracao, e um arco de fronteira e que sera 
+     Este laco procura dentre os arcos do grafo g aqueles cuja origem parte do ultimo vertice adicionado a regiao Z e o destino
+     a algum valor fora de Z, caso isso ocorra, significa que este arco, na atual iteracao, e um arco de fronteira e que sera 
      armazenado no heap h, antes de armazenarmos no heap, alteramos o valor do custo do arco, considere que o arco seja uv,
      o seu novo custo sera o custo associado a u, valor este que estara armazenado no vetor de custos passado como parametro da 
-     funcao mais o custo inicial do arco, como a passagem do grafo g e feita por referencia, para nao alterarmos diretamente 
+     funcao, mais o custo inicial do arco, como a passagem do grafo g e feita por referencia, para nao alterarmos diretamente 
      o valor do arco na estrutura de g, o que causaria incoerencia em iteracoes seguintes, cada arco de fronteira uv e armazenado
      primeiramente em uma variavel auxiliar novaFronteira, seu custo entao e alterado e logo em seguida inserimos o novo arco de 
      fronteira no heap h, assim, garantimos que a cada iteracao do algoritmo de Dijkstra o primeiro elemento do heap sera
-     justamente o arco de menor custo da fronteira de Z.
+     justamente o arco mais barato da fronteira de Z que devemos escolher.
     */
     i = j = 0;
     while(i < (*g)->vertices[encontrarVertice(g, conjuntoZ[tamanhoZ - 1])]->grau){
@@ -433,17 +433,17 @@ void atualizarHeap(HeapMinimo* h, int* conjuntoZ, int tamanhoZ, Grafo** g, float
  * Entrada: um ponteiro de ponteiro para um grafo g, um ponteiro para um vertice u que representa a origem do caminho,
  * um ponteiro para um vertice v que representa o destino do caminho, um ponteiro de ponteiro de inteiro anterior que serve
  * para remontar ao final do algoritmo o caminho, caso ele exista, de u a v e um ponteiro de ponteiro de float custos para
- * armazenar os custos para sair de u e chegar a cada vertices vi pelo qual o algoritmo visitar
+ * armazenar os custos para sair de u e chegar a cada vertice vi pelo qual o algoritmo visitar.
  * Saida: nada, entretanto, ao final do algoritmo, como os vetores anterior e custos foram passados por referencia, neles 
  * estarao as informacoes necessarias para reconstruir o caminho de custo minimo de u a v e o custo desse caminho.
  * Obs: os ponteiros extras para o grafo e os vetores anteior e custos foram usados para evitar passar uma copia de toda a
  * estrutura do grafo e porque precisamos armazenar as duas informacoes de anteriores e custos no referidos vetores o que seria
- * impossivel de retornar, pois uma funcao em c deve ter retorno minimo, 
+ * impossivel de retornar, pois uma funcao em c nao pode retornar dois dados, 
  * logo, armazenamos essas informacoes por passagem de referencia.
- * Como o algoritmo funciona: inicialmente o vetor de custos e preenchido com INFINITY para todos os vertices, indicando
- * que nao sabemos o custo para, partindo da origem u, chegar a cada vertice vi, o vetor anteior e inicializado com 0 para todos
- * o vertices, contudo o custo e o anterior da origem sao ambos 0. A cada iteracao do algoritmo escolhemos o arco de menor custo 
- * da fronteira Z que se inicia apenas com o vertice origem, seja uv tal arco, incluimos v em Z, anotamos que o anterior de v e u,
+ * Como o algoritmo funciona: inicialmente o vetor de custos e preenchido com INFINITY para todos os vertices,excetuando a origem,cujo 
+ * custo para chegar e 0, indicando que nao sabemos o custo para, partindo da origem u, chegar a cada vertice vi, o vetor anterior e                    
+ * inicializado com 0 para todos o vertices. A cada iteracao do algoritmo escolhemos o arco mais barato da fronteira Z, a qual se
+ * inicia apenas com o vertice origem, seja uv tal arco, incluimos v em Z, anotamos que o anterior de v e u,
  * que o custo para chegar a v e o custo para chegar a u + o custo de uv e atualizamos os arcos da fronteira de Z.
  * Quando o algoritmo para, se o vertice destino estiver em Z significa que temos um caminho entre a origem e destino, caso contrario
  * dizemos que o custo para chegarmos ao destino e INFINITO, pois nao existe tal caminho.
@@ -510,7 +510,7 @@ void mostrarCaminho(Grafo** g, int verticeOrigem, int verticeDestino, int** ante
  * a origem e destino especificados no arquivo, caso este caminho exista este sera mostrado em tela, bem como seu custo, caso
  * contrario sera mostrada uma mesagem informado que nao existe um caminho entre os referidos vertices e que, consequentemente,
  * o custo para chegar ao destino e INFINITO. Existem tambem algumas validacoes para casos de grafos especificos, por exemplo,
- * quando nao existe nenhum arcos partindo do vertice origem ou chegando ao vertice destino, casos estes quem que, obviamente,
+ * quando nao existe nenhum arco partindo do vertice origem ou chegando ao vertice destino, casos estes em que, obviamente,
  * nao havera caminho entre origem e destino.
 */
 int main(int narg, char* argv[]){
